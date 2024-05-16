@@ -7,8 +7,9 @@ const SignupPage = (props: Props) => {
   return (
     <>
       <div className="w-[500px] h-fit gap-[20px] p-[20px] sm:p-[40px] bg-white shadow">
-        <div className="w-full flex justify-end cursor-pointer">
+        {/* <div className="w-full flex justify-end cursor-pointer">
           <svg
+           className='z-10'
             width="24"
             height="24"
             viewBox="0 0 24 24"
@@ -30,9 +31,9 @@ const SignupPage = (props: Props) => {
               stroke-linejoin="round"
             />
           </svg>
-        </div>
-        <div className="w-full flex justify-start">
-            <p className="text-[20px] sm:text-[32px] font-bold">Sign up</p>
+        </div> */}
+        <div className="w-full flex justify-start py-5">
+            <p className="text-xl sm:text-2xl font-bold">Sign up</p>
         </div>
         <TextInput placeholder="username" />
         <TextInput placeholder="email" />

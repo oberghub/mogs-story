@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
 import useScreenSize from "../useScreenSize";
+import SearchBar from "./SearchBar";
 
 type Props = {};
 
 const Navbar = (props: Props) => {
-    const [isShown, setIsShown] = useState(false)
-    const screenSize = useScreenSize();
-    useEffect(() => {
-        if(screenSize.width > 1024){
-            setIsShown(false)
-        }
-    }, [screenSize.width])
+  const [isShown, setIsShown] = useState(false)
+  const screenSize = useScreenSize();
+  useEffect(() => {
+    if (screenSize.width > 1024) {
+      setIsShown(false)
+    }
+  }, [screenSize.width])
   return (
-    <>
-      <div className="w-full flex justify-between items-center bg-white h-[80px] px-[20px] py-[10px] border-b border-[#BABABA]">
+    <div className="relative z-50">
+      <div className="w-full flex justify-between items-center bg-white h-[80px] sm:px-[20px] py-[10px] border-b border-[#BABABA]">
         <div className="w-fit h-fit gap-[40px] p-[10px] flex justify-between items-center">
           <svg
             width="57"
@@ -50,15 +51,23 @@ const Navbar = (props: Props) => {
               className="hidden lg:flex pl-[40px] pr-[10px] bg-[#ECECEC] rounded w-[320px] h-[44px] outline-none"
               placeholder="search stories"
             />
-            {isShown && <p className="flex lg:hidden text-base cursor-pointer">kiki</p>}
           </div>
         </div>
         <div className="flex justify-between items-center gap-[40px]">
-            <p className="hidden lg:flex text-base cursor-pointer">My Stories</p>
-            <p className="hidden lg:flex text-base cursor-pointer">Sign in</p>
+          <p className="hidden lg:flex text-base cursor-pointer">My Stories</p>
+          <p className="hidden lg:flex text-base cursor-pointer">Sign in</p>
+          <svg className="flex lg:hidden" onClick={() => { setIsShown(!isShown) }} width="29" height="22" viewBox="0 0 29 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 2H27" stroke="black" stroke-width="3" stroke-linecap="round" />
+            <path d="M2 20H27" stroke="black" stroke-width="3" stroke-linecap="round" />
+            <path d="M2 11H27" stroke="black" stroke-width="3" stroke-linecap="round" />
+          </svg>
+        </div>
+      </div>
+      {isShown &&
+        <div className="w-full absolute flex flex-col gap-2 p-2 mt-2 shadow bg-white">
+          <div className="flex relative w-full h-[40px] rounded bg-gray-100">
             <svg
-              onClick={() => {setIsShown(!isShown)}}
-              className="flex lg:hidden cursor-pointer"
+              className="flex lg:hidden absolute top-[8px] ml-2"
               width="24"
               height="24"
               viewBox="0 0 24 24"
@@ -73,9 +82,16 @@ const Navbar = (props: Props) => {
                 stroke-linecap="round"
               />
             </svg>
+          </div>
+          <div className="cursor-pointer flex items-center justify-center w-full h-[40px] rounded bg-white">
+            <p className="underline">My Stories</p>
+          </div>
+          <div className="cursor-pointer flex items-center justify-center w-full h-[40px] rounded bg-white">
+            <p className="underline">Sign In</p>
+          </div>
         </div>
-      </div>
-    </>
+      }
+    </div>
   );
 };
 
