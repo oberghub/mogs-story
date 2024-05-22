@@ -14,13 +14,19 @@ export class Stories {
   description: string;
 
   @Prop()
+  img_title: string;
+
+  @Prop()
+  img_caption: string;
+
+  @Prop()
   author: string;
 
   @Prop({ required: true })
   byUserId: string;
 
   @Prop()
-  publishDate: string;
+  publish_date: string;
 
   @Prop()
   content: content[];

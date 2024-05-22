@@ -23,8 +23,8 @@ export class StoriesService {
     return this.storiesModel.findById(id).exec();
   }
 
-  async findByUserId(id: string): Promise<Stories[]> {
-    return this.storiesModel.find({ byUserId: id });
+  async findByUserName(username: string): Promise<Stories[]> {
+    return this.storiesModel.find({ byUserId: username });
   }
 
   async update(id: string, updateStoryDto: UpdateStoryDto) {

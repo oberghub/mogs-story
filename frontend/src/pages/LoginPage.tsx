@@ -1,8 +1,33 @@
+import { Link, useNavigate } from "react-router-dom";
 import TextInput from "../components/TextInput";
+import { useState } from "react";
+import axios from "axios";
 
 type Props = {};
 
 const LoginPage = (props: Props) => {
+  const navigate = useNavigate()
+  const [data, setData] = useState({
+    userName: "",
+    password: "",
+  });
+  const handleChangeUsername = (value: string) => {
+    setData(() => ({ ...data, userName: value }));
+  };
+  const handleChangePassword = (value: string) => {
+    setData(() => ({ ...data, password: value }));
+  };
+  const login = () => {
+    axios
+      .post("http://localhost:3000/auth/login", data)
+      .then((res) => {
+        alert("เข้าสู่ระบบสำเร็จ!");
+        const tk = res.data.access_token;
+        localStorage.setItem("access_token", tk);
+        navigate('/')
+      })
+      .catch((e) => alert("พบข้อผิดพลาด"));
+  };
   return (
     <>
       <div className="w-[500px] h-fit gap-[20px] p-[20px] sm:p-[40px] bg-white shadow">
@@ -31,16 +56,28 @@ const LoginPage = (props: Props) => {
           </svg>
         </div> */}
         <div className="w-full flex justify-start">
-            <p className="text-xl sm:text-2xl font-bold py-5">Sign in</p>
+          <p className="text-xl sm:text-2xl font-bold py-5" onClick={() => console.log(data)}>Sign in</p>
         </div>
-        <TextInput placeholder="username" />
-        <TextInput placeholder="password" />
+        <TextInput
+          placeholder="username"
+          setValue={handleChangeUsername}
+          type={"text"}
+        />
+        <TextInput
+          placeholder="password"
+          setValue={handleChangePassword}
+          type={"password"}
+        />
         <div className="w-full flex justify-center items-center py-[15px] sm:py-[30px] gap-[10px]">
-            <button className="p-[10px] bg-black rounded">
-                <p className="text-white text-sm sm:text-base">Let's Go</p>
-            </button>
-            <p className="text-sm sm:text-base">Or</p>
-            <p className="underline font-bold cursor-pointer text-sm sm:text-base">Sign up</p>
+          <button onClick={() => login()} className="p-[10px] bg-black rounded">
+            <p className="text-white text-sm sm:text-base">Let's Go</p>
+          </button>
+          <p className="text-sm sm:text-base">Or</p>
+          <Link to={"/signup"}>
+            <p className="underline font-bold cursor-pointer text-sm sm:text-base">
+              Sign up
+            </p>
+          </Link>
         </div>
       </div>
     </>

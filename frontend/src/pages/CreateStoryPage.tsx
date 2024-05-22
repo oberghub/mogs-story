@@ -1,6 +1,7 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 import AddIcon from '../assets/AddIcon.svg'
-import Cat from '../assets/cat.jpg'
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 const CreateStoryPage = () => {
     enum contentType {
         PARAGRAPH = "PARAGRAPH",
@@ -8,25 +9,54 @@ const CreateStoryPage = () => {
         HEADER2 = "HEADER2"
 
     }
-    const [data, setData] = useState({
+    interface storyStruc {
+        title: string;
+        description: string;
+        img_title: string;
+        img_caption: string;
+        author: string;
+        byUserId: string;
+        publish_date: string;
+        content: content[];
+        categories: string[];
+    }
+    interface content {
+        type: contentType;
+        content: string;
+        img_caption?: string;
+    }
+    const token = localStorage.getItem('access_token')
+    const [user, setUser] = useState({userName: ""})
+    //get user profile
+    useEffect(() => {
+        axios.get('http://localhost:3000/user/profile', {
+        headers: {
+            Authorization: 'Bearer ' + token
+        }
+        }).then(res => {
+            setUser(res.data)
+        })
+    }, [])
+    const [data, setData] = useState<storyStruc>({
         title: "",
         img_title: "",
         img_caption: "",
         description: "",
-        author: "Oberg",
-        publish_date: "14 May 2024",
+        author: "",
+        byUserId: "",
+        publish_date: "",
         content: [
-            {
-                type: "PARAGRAPH",
-                content: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae accusamus eligendi autem omnis itaque, mollitia molestiae laboriosam consequatur pariatur perferendis cumque ducimus, totam laudantium illo tempora fuga nam amet cum!"
-            },
-            {
-                type: "IMAGE",
-                content: Cat,
-                img_caption: ""
-            },
+            // {
+            //     type: "PARAGRAPH",
+            //     content: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae accusamus eligendi autem omnis itaque, mollitia molestiae laboriosam consequatur pariatur perferendis cumque ducimus, totam laudantium illo tempora fuga nam amet cum!"
+            // },
+            // {
+            //     type: "IMAGE",
+            //     content: Cat,
+            //     img_caption: ""
+            // },
         ],
-        category_tags: ["ท่องเที่ยว", "เชียงใหม่"]
+        categories: []
     })
     const [isShownInsertContent, setIsShownInsertContent] = useState(false);
     const [focusOnContent, setFocusOnContent] = useState(null)
@@ -46,18 +76,41 @@ const CreateStoryPage = () => {
         img.onload = () => { }
         return { width: img.width, height: img.height }
     }
-    const setImageContent = (value) => {
-        const createImage = URL.createObjectURL(value)
+    async function setImageContent (value) {
+        const img_base64 = await convertBase64(value)
+        // console.log(img_base64)
+        // const createImage = URL.createObjectURL(value)
         const imgData = {
             type: "IMAGE",
-            content: createImage,
+            content: img_base64,
             img_caption: ""
         }
-        console.log(imgData)
         setData(() => (
             {
                 ...data,
                 content: [...data.content, imgData]
+            }
+        ))
+    }
+    const convertBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const fileReader = new FileReader();
+            fileReader.readAsDataURL(file)
+            fileReader.onload = () => {
+              resolve(fileReader.result)
+            }
+            fileReader.onerror = (error) => {
+                reject(error)
+            }
+        })
+    }
+    async function setImageTitle (value) {
+        const createImage = URL.createObjectURL(value)
+        const img_base64 = await convertBase64(value)
+        setData(() => (
+            {
+                ...data,
+                img_title: img_base64
             }
         ))
     }
@@ -106,27 +159,56 @@ const CreateStoryPage = () => {
             }
         ))
     }
+    const navigate = useNavigate()
+    const publishContent = () => {
+        const story = data;
+        const date = new Date()
+        const day = date.getDate()
+        const month = date.getMonth() + 1 //Jan = 0
+        const year = date.getFullYear()
+        story.publish_date = `${day}/${month}/${year}`
+        story.author = user.userName;
+        story.byUserId = user.userName
+        axios.post('http://localhost:3000/stories', story, {
+            headers: {
+                Authorization: 'Bearer ' + token
+            }
+        }).then(res => {
+            console.log(res)
+            alert("เพิ่มสำเร็จ!")
+            navigate('/')
+        }).catch((e) => {
+            alert("ไม่สำเร็จ: เกิดข้อผิดพลาด หรือ token หมดอายุ")
+        })
+    }
     return (
         <div className="w-[1040px] h-screen">
             <div className="w-full h-fit flex justify-between items-center py-3 gap-5 sm:gap-0 mt-6">
-                <p className="text-2xl sm:text-3xl font-bold text-left">Create Your Story</p>
-                <button className="p-3 sm:w-[90px] sm:h-[45px] bg-[#47CA18] rounded outline-none">
+                <p onClick={() => console.log(data)} className="text-2xl sm:text-3xl font-bold text-left">Create Your Story</p>
+                <button onClick={() => publishContent()} className="p-3 sm:w-[90px] sm:h-[45px] bg-[#47CA18] rounded outline-none">
                     <p className="font-bold text-white text-xs sm:text-sm">Publish</p>
                 </button>
             </div>
-            <div className="w-full h-fit flex gap-3 py-3 items-center">
+            {/* <div className="w-full h-fit flex gap-3 py-3 items-center">
                 <img src={AddIcon} className='w-[40px] sm:w-[55px]' />
                 <p className='text-base sm:text-xl text-gray-300'>Add Tags</p>
-            </div>
-            <div className="w-full h-fit flex gap-3 py-3 items-center">
+            </div> */}
+            <div className="w-full h-fit flex gap-3 py-3 items-center my-5">
                 <input value={data.title} onChange={(e) => { setData(() => ({ ...data, title: e.target.value })) }} type='text' className='text-2xl font-bold sm:text-3xl flex flex-wrap pl-3 outline-none w-full' placeholder='Title' />
             </div>
-            <div className="w-full h-fit flex flex-col gap-3 py-3 items-center justify-center">
-                <div className='flex flex-wrap items-center justify-center pl-3 outline-none w-full sm:w-[550px] h-[240px] sm:h-[340px] bg-gray-300'>
-                    <input type='file' id='img-title' hidden />
+            <div className="relative w-full h-fit flex flex-col gap-3 py-3 items-center justify-center">
+                <div className={`reltive flex flex-wrap items-center justify-center pl-3 outline-none w-1/2 sm:w-1/3 ${!data.img_title && "bg-gray-300"}`}>
+                    {!data.img_title
+                    ?
+                    <>
+                    <input type='file' id='img-title' className='cursor-pointer absolute left-0 top-[11px] opacity-0 w-1/2 sm:w-1/3 h-[50px] bg-red-200' onChange={(e) => setImageTitle(e.target.files[0])} />
                     <label htmlFor="img-title">
                         <img src={AddIcon} />
                     </label>
+                    </>
+                    :
+                    <img className='w-full h-full object-scale-down rounded' src={data.img_title} />
+                    }
                 </div>
                 <input value={data.img_caption} onChange={(e) => { setData(() => ({ ...data, img_caption: e.target.value })) }} type='text' className='w-full sm:w-1/2 text-center text-sm sm:text-base flex flex-wrap pl-3 outline-none' placeholder='Insert image caption.' />
             </div>
@@ -146,8 +228,8 @@ const CreateStoryPage = () => {
                             ?
                             <div className="w-full h-fit flex items-center justify-center relative">
                                 <div style={{ backgroundColor: focusOnContent == index ? "#F6F6F6" : "white" }} className='w-full flex flex-col gap-3 items-center my-6'>
-                                    <div className={`relative flex flex-wrap items-center justify-center outline-none w-full sm:w-[550px] h-auto sm:h-[340px] bg-gray-300`}>
-                                        <img onClick={() => { console.log(getImageDimension(item.content)) }} className='w-full h-full rounded' src={item.content} />
+                                    <div className={`relative flex flex-wrap items-center justify-center outline-none w-full`}>
+                                        <img onClick={() => { console.log(getImageDimension(item.content)) }} className='w-1/2 sm:w-1/3 object-scale-down rounded' src={item.content} />
                                         <input value={item.img_caption} onChange={(e) => { setImgCaptionContent(index, e.target.value) }} type='text' className='text-gray-400 w-full text-center text-sm sm:text-base flex flex-wrap pl-3 outline-none' placeholder='Insert image caption.' />
                                     </div>
                                 </div>
